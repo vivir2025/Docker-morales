@@ -1,37 +1,411 @@
-<!-- This view lists the different options by document number such as print, view home visits and all the information about the patients. ... -->
-<div class="container">
+<style>
+/* Estilos profesionales para historial clínico */
+.historial-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+}
 
-    <hr>
-    <h5 style="color: white;">CONSULTAS Y/O HISTORIAL POR DOCUMENTO PACIENTE</h5>
-    <hr>
-    <div class="form-row">
-        <label class="col-sm-2 col-form-label text-white">Documento:</label>
-        <div class="input-group col-sm-10 ">
-            <input class="form-control" type="text" id="documento" placeholder="Documento" required="">
-            <div class="input-group-append">
-                <body onkeyup="buscar_paciente()"></body>
+.historial-search-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border: 2px solid #e0e0e0;
+}
+
+.historial-search-section h4 {
+    color: #2c3e50;
+    margin: 0 0 25px 0;
+    font-weight: 700;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.historial-search-section h4 i {
+    color: #3498db;
+}
+
+.search-input-group {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.search-input-wrapper {
+    flex: 1;
+}
+
+.search-input-wrapper label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.search-input-wrapper input {
+    width: 100%;
+    padding: 12px 18px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.search-input-wrapper input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.15);
+    outline: none;
+}
+
+.btn-search {
+    padding: 12px 30px;
+    background: #3498db;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-search:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* Skeleton Loader */
+.skeleton-loader-historial {
+    display: none;
+    margin: 20px 0;
+}
+
+.skeleton-card-historial {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    border: 2px solid #e0e0e0;
+}
+
+.skeleton-header-historial {
+    height: 70px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+}
+
+.skeleton-body-historial {
+    padding: 20px;
+}
+
+.skeleton-line-historial {
+    height: 20px;
+    background: linear-gradient(90deg, #f8f8f8 25%, #ececec 50%, #f8f8f8 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s ease-in-out infinite;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.skeleton-line-historial:last-child {
+    width: 70%;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* Tarjeta de historial */
+.historial-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 3px 15px rgba(0,0,0,0.12);
+    border: 3px solid #e0e0e0;
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.historial-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 25px rgba(0,0,0,0.18);
+    border-color: #3498db;
+}
+
+.historial-card-header {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    padding: 18px 25px;
+    font-weight: 700;
+    font-size: 16px;
+    border-bottom: 3px solid #2874a6;
+}
+
+.historial-card-body {
+    padding: 25px;
+}
+
+.historial-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.historial-table thead {
+    background: #f8f9fa;
+}
+
+.historial-table thead th {
+    padding: 16px 15px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+    border: 2px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.historial-table thead th:first-child {
+    border-top-left-radius: 8px;
+}
+
+.historial-table thead th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.historial-table tbody td {
+    padding: 18px 15px;
+    vertical-align: middle;
+    font-size: 14px;
+    border: 2px solid #dee2e6;
+    border-top: none;
+    text-align: center;
+}
+
+.historial-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.historial-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.patient-info {
+    text-align: left;
+}
+
+.patient-info .doc-number {
+    font-weight: 700;
+    color: #3498db;
+    font-size: 15px;
+    margin-bottom: 8px;
+}
+
+.patient-info .patient-name {
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.area-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.professional-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.history-date {
+    font-weight: 600;
+    color: #7f8c8d;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+}
+
+.btn-action {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 2px solid #e0e0e0;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.btn-action img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.btn-action:hover {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.btn-action.btn-historia {
+    border-color: #F04848;
+    background: #ffe5e5;
+}
+
+.btn-action.btn-historia:hover {
+    background: #F04848;
+    border-color: #F04848;
+}
+
+.btn-action.btn-print {
+    border-color: #0004FF;
+    background: #e5e5ff;
+}
+
+.btn-action.btn-print:hover {
+    background: #0004FF;
+    border-color: #0004FF;
+}
+
+.btn-action.btn-medicamento {
+    border-color: #FFD800;
+    background: #fffae5;
+}
+
+.btn-action.btn-medicamento:hover {
+    background: #FFD800;
+    border-color: #FFD800;
+}
+
+.btn-action.btn-remision {
+    border-color: #00B305;
+    background: #e5ffe6;
+}
+
+.btn-action.btn-remision:hover {
+    background: #00B305;
+    border-color: #00B305;
+}
+
+.btn-action.btn-ayuda {
+    border-color: #029FFF;
+    background: #e5f6ff;
+}
+
+.btn-action.btn-ayuda:hover {
+    background: #029FFF;
+    border-color: #029FFF;
+}
+
+.empty-state-historial {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+}
+
+.empty-state-historial i {
+    font-size: 64px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.empty-state-historial h5 {
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.empty-state-historial p {
+    color: #6c757d;
+    font-size: 14px;
+}
+</style>
+
+<!-- Vista mejorada de historial clínico -->
+<div class="historial-container">
+    <div class="historial-search-section">
+        <h4><i class="fa fa-file-medical"></i> Consultas y Historial por Documento</h4>
+        <div class="search-input-group">
+            <div class="search-input-wrapper">
+                <label>Documento del Paciente</label>
+                <input type="text" id="documento" placeholder="Ingrese número de documento" onkeyup="buscar_paciente()">
             </div>
         </div>
-        
-    </div><br>
-    <div>
-    <div  id="resultado" style="display: none;"></div>
+    </div>
+
+    <!-- Skeleton Loader -->
+    <div id="skeletonLoaderHistorial" class="skeleton-loader-historial">
+        <div class="skeleton-card-historial">
+            <div class="skeleton-header-historial"></div>
+            <div class="skeleton-body-historial">
+                <div class="skeleton-line-historial"></div>
+                <div class="skeleton-line-historial"></div>
+                <div class="skeleton-line-historial"></div>
+            </div>
+        </div>
+        <div class="skeleton-card-historial">
+            <div class="skeleton-header-historial"></div>
+            <div class="skeleton-body-historial">
+                <div class="skeleton-line-historial"></div>
+                <div class="skeleton-line-historial"></div>
+                <div class="skeleton-line-historial"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor de resultados -->
+    <div id="resultado" style="display: none;"></div>
 </div> 
 
 <script type='text/javascript'>
     function buscar_paciente() {
         var documento = $('#documento').val();
 
-        //alert(documento);
+        if(documento.length >= 3) {
+            // Mostrar skeleton loader
+            $('#resultado').hide();
+            $('#skeletonLoaderHistorial').show();
 
-        $.post("<?= base_url("index.php/CHistorial/buscar_paciente") ?>", {
-            documento: documento
-        }, function(data) {
-
-            //console.log(data);
-            $('#resultado').show();
-            $("#resultado").html(data);
-        });
+            $.post("<?= base_url("index.php/CHistorial/buscar_paciente") ?>", {
+                documento: documento
+            }, function(data) {
+                // Ocultar skeleton y mostrar resultados
+                $('#skeletonLoaderHistorial').hide();
+                $('#resultado').show();
+                $("#resultado").html(data);
+            });
+        } else {
+            $('#resultado').hide();
+            $('#skeletonLoaderHistorial').hide();
+        }
     }
 
     function verHistoriaCompleta(id_hc,id_proceso) {

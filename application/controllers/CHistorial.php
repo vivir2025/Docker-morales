@@ -80,25 +80,28 @@ class CHistorial extends CI_Controller
       $pacDocumento = $this->input->post('documento');
 
       $data = $this->MHistorial->getPacientexdoc($pacDocumento);
-      //print_r($data);
-
-      echo "<div class='container'>";
-      echo "<table class='table table-bordered bg-white'>";
-
 
       if (sizeof($data) > 0) {
-
-         //echo "<div class='alert alert-info alert-dismissible fade show' role='alert'";
-
+         
+         echo "<div class='historial-card'>";
+         echo "<div class='historial-card-header'>";
+         echo "<i class='fa fa-folder-open'></i> Historial Clínico - " . sizeof($data) . " registro(s) encontrado(s)";
+         echo "</div>";
+         echo "<div class='historial-card-body'>";
+         
+         echo "<table class='historial-table'>";
+         echo "<thead>";
          echo "<tr>";
-         echo "<td>Paciente</td>";
-         echo "<td>Tipo</td>";
-         echo "<td>Area</td>";
-         echo "<td>Profesional</td>";
-         echo "<td>Fecha</td>";
-         echo "<td>Opcion</td>";
+         echo "<th style='width: 25%;'>Paciente</th>";
+         echo "<th style='width: 10%;'>Tipo</th>";
+         echo "<th style='width: 20%;'>Área</th>";
+         echo "<th style='width: 18%;'>Profesional</th>";
+         echo "<th style='width: 12%;'>Fecha</th>";
+         echo "<th style='width: 15%;'>Opciones</th>";
          echo "</tr>";
+         echo "</thead>";
          echo "<tbody>";
+         
          foreach ($data as $d) {
 
             $url1 = base_url('index.php/CHistorial/imprimir_medicamento/' . $d->id_hc);
@@ -123,57 +126,96 @@ class CHistorial extends CI_Controller
             } elseif ($d->proceso_idProceso == 5 && $d->id_categoria_cups == 2) {
                $proceso = 'PSICOLOGIA CONTROL';
             } elseif ($d->proceso_idProceso == 13 && $d->id_categoria_cups == 1) { 
-               $proceso = 'FISIOTERAPIA  PRIMERA VEZ';
+               $proceso = 'FISIOTERAPIA PRIMERA VEZ';
             } elseif ($d->proceso_idProceso == 13 && $d->id_categoria_cups == 2) {
                $proceso = 'FISIOTERAPIA CONTROL';
-        
             } else {
                $proceso = $d->proNombre;
             }
 
             echo "<tr>";
-            echo "<td>CC: " . $d->pacDocumento . "<br>Nombre: " . $d->pacNombre . " " . $d->pacNombre2 . " " . $d->pacApellido . " " . $d->pacApellido2 . "</td>";
-            echo "<td>ESPECIALIDAD</td>";
-            echo "<td>" . $proceso . "</td>";
-            echo "<td>" . $d->usuNombre . " " . $d->usuApellido . "</td>";
-            echo "<td>" . $d->citFecha . "</td>";
-            echo  "<td align=center>";
+            
+            // Columna Paciente
+            echo "<td class='patient-info'>";
+            echo "<div class='doc-number'><i class='fa fa-id-card'></i> CC: " . $d->pacDocumento . "</div>";
+            echo "<div class='patient-name'>" . $d->pacNombre . " " . $d->pacNombre2 . " " . $d->pacApellido . " " . $d->pacApellido2 . "</div>";
+            echo "</td>";
+            
+            // Columna Tipo
+            echo "<td><span style='font-weight: 600; color: #7f8c8d;'>ESPECIALIDAD</span></td>";
+            
+            // Columna Área
+            echo "<td><span class='area-badge'>" . $proceso . "</span></td>";
+            
+            // Columna Profesional
+            echo "<td class='professional-name'>" . $d->usuNombre . " " . $d->usuApellido . "</td>";
+            
+            // Columna Fecha
+            echo "<td class='history-date'>" . date('d/m/Y', strtotime($d->citFecha)) . "</td>";
+            
+            // Columna Opciones
+            echo "<td>";
+            echo "<div class='action-buttons'>";
            
-            echo "<img style='width: 10%; border-radius: 50%;' id='boton' src='" . base_url('assets/img/123.jpg') . "' title='Historia Clinica Completa' onclick='verHistoriaCompleta(" . $d->id_hc . ", " . $d->id_cat_cups . ", " . $d->proceso_idProceso . ")'>";
+            // Botón Historia Completa
+            echo "<button class='btn-action btn-historia' title='Historia Clínica Completa' onclick='verHistoriaCompleta(" . $d->id_hc . ", " . $d->id_cat_cups . ", " . $d->proceso_idProceso . ")'>";
+            echo "<img src='" . base_url('assets/img/123.jpg') . "'>";
+            echo "</button>";
 
+            // Botón Imprimir Historia
+            echo "<button class='btn-action btn-print' title='Historia Clínica' onclick='verValoracion($d->id_hc, $d->id_cat_cups, $d->proceso_idProceso)'>";
+            echo "<img src='" . base_url('assets/img/imprimir1.png') . "'>";
+            echo "</button>";
 
-
-            echo "<img width= 10% id=segundo src='" . base_url('assets/img/imprimir1.png') . "'  title='Historia Clinica' onclick='verValoracion($d->id_hc, $d->id_cat_cups, $d->proceso_idProceso)'> ";
-
-
+            // Botón Medicamentos (condicional)
             if ($d->proceso_idProceso == 1 || $d->proceso_idProceso == 2 || $d->proceso_idProceso == 3 || $d->proceso_idProceso == 4 || $d->proceso_idProceso == 5 || $d->proceso_idProceso == 6 || $d->proceso_idProceso == 7) {
-               echo "<img  width= 11% id=tercero src='" . base_url('assets/img/medicamentos.png') . "'    title='Medicamento' onClick='finestraSecundaria(\"{$url1}\")'>
-                ";
+               echo "<button class='btn-action btn-medicamento' title='Medicamento' onClick='finestraSecundaria(\"{$url1}\")'>";
+               echo "<img src='" . base_url('assets/img/medicamentos.png') . "'>";
+               echo "</button>";
             }
+            
+            // Botón Remisión (condicional)
             if ($d->proceso_idProceso == 1 || $d->proceso_idProceso == 3 || $d->proceso_idProceso == 4 || $d->proceso_idProceso == 5 || $d->proceso_idProceso == 6 || $d->proceso_idProceso == 7) {
-               echo "<img   width= 10% id=cuarto src='" . base_url('assets/img/remision.png') . "'  title='Remision' onClick='finestraSecundaria(\"{$url2}\")'> ";
+               echo "<button class='btn-action btn-remision' title='Remisión' onClick='finestraSecundaria(\"{$url2}\")'>";
+               echo "<img src='" . base_url('assets/img/remision.png') . "'>";
+               echo "</button>";
             }
+            
+            // Botón Ayuda Diagnóstica (condicional)
             if ($d->proceso_idProceso == 1 || $d->proceso_idProceso == 3 || $d->proceso_idProceso == 6 || $d->proceso_idProceso == 7) {
-               echo "<img  width= 10% id=quinto src='" . base_url('assets/img/ayuda.png') . "'  title='Ayuda Dianostica' onClick='finestraSecundaria(\"{$url3}\")'> ";
+               echo "<button class='btn-action btn-ayuda' title='Ayuda Diagnóstica' onClick='finestraSecundaria(\"{$url3}\")'>";
+               echo "<img src='" . base_url('assets/img/ayuda.png') . "'>";
+               echo "</button>";
             }
-            echo "<img  width= 11% id=quinto src='" . base_url('assets/img/paraclinico1.png') . "'  title='Paraclinicos' onclick='vervistaparaclinico($d->pacDocumento)'>";
-            echo "<img  width= 11% id=quinto  src='" . base_url('assets/img/visitas.png') . "'   title='Visitas Domiciliarias' onclick='verVisitas($d->pacDocumento)'>";
+            
+            // Botón Paraclínicos
+            echo "<button class='btn-action btn-ayuda' title='Paraclínicos' onclick='vervistaparaclinico($d->pacDocumento)'>";
+            echo "<img src='" . base_url('assets/img/paraclinico1.png') . "'>";
+            echo "</button>";
+            
+            // Botón Visitas Domiciliarias
+            echo "<button class='btn-action btn-ayuda' title='Visitas Domiciliarias' onclick='verVisitas($d->pacDocumento)'>";
+            echo "<img src='" . base_url('assets/img/visitas.png') . "'>";
+            echo "</button>";
+            
+            echo "</div>";
             echo "</td>";
             echo "</tr>";
          }
+         
          echo "</tbody>";
+         echo "</table>";
+         echo "</div>";
+         echo "</div>";
+         
       } else {
 
-         echo "<div class='alert alert-danger alert-dismissible fade show' role='alert'>
-         No hay historial para mostrar.
-         <button type='button' class='close' data-dismiss='alert' aria-label='Close'>
-         <span aria-hidden='true'>&times;</span>
-         </button>
-         </div>";
+         echo "<div class='empty-state-historial'>";
+         echo "<i class='fa fa-folder-open'></i>";
+         echo "<h5>No se encontró historial</h5>";
+         echo "<p>No hay registros de historial clínico para el documento ingresado</p>";
+         echo "</div>";
       }
-
-      echo "</table>";
-      echo "</div>";
    }
    public function buscar_paciente2()
    {

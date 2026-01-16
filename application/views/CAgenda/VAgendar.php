@@ -580,17 +580,40 @@
 
     // Variable para controlar si estamos seleccionando un elemento
     var seleccionandoElemento = false;
+    var timeoutBusqueda = null;
 
-    // Búsqueda por código con evento input
+    // Búsqueda por código con debounce
     $("#codigo").on("input", function() {
         if (seleccionandoElemento) return;
-        buscar_cups_codigo();
+        
+        clearTimeout(timeoutBusqueda);
+        var valorInput = $(this).val().trim();
+        
+        if (valorInput === "") {
+            $("#lista_codigo").hide();
+            return;
+        }
+        
+        timeoutBusqueda = setTimeout(function() {
+            buscar_cups_codigo();
+        }, 300);
     });
 
-    // Búsqueda por nombre con evento input
+    // Búsqueda por nombre con debounce
     $("#cup").on("input", function() {
         if (seleccionandoElemento) return;
-        buscar_cups_nombre();
+        
+        clearTimeout(timeoutBusqueda);
+        var valorInput = $(this).val().trim();
+        
+        if (valorInput === "") {
+            $("#lista_nombre").hide();
+            return;
+        }
+        
+        timeoutBusqueda = setTimeout(function() {
+            buscar_cups_nombre();
+        }, 300);
     });
 
     function buscar_cups_codigo() {
@@ -659,8 +682,9 @@
     $(document).on("click", ".elemento-lista", function(e) {
         e.preventDefault();
         e.stopPropagation();
+        e.stopImmediatePropagation();
         
-        // Activar flag para evitar trigger de búsqueda
+        // Activar flag INMEDIATAMENTE para evitar trigger de búsqueda
         seleccionandoElemento = true;
         
         var elemento = $(this);
@@ -671,22 +695,24 @@
         var categoria = elemento.data("categoria");
         var pacienteCategoria = elemento.data("paciente-categoria");
 
-        // Asignar valores a los inputs
-        $("input#cup").val(nombreCup);
-        $("#codigo").val(codigoCup);
-        $("#cups_contratado").val(cupsContratado);
-        
-        // Ocultar los listados
+        // Ocultar los listados PRIMERO
         $('#lista_nombre').hide();
         $('#lista_codigo').hide();
         $('#mensaje').hide();
         
+        // Asignar valores a los inputs DESPUÉS de ocultar listas
+        $("#cup").val(nombreCup);
+        $("#codigo").val(codigoCup);
+        $("#cups_contratado").val(cupsContratado);
+        
         console.log("CUPS seleccionado: " + nombreCup + " - " + codigoCup);
         
-        // Desactivar flag después de un pequeño delay
+        // Desactivar flag después de un delay más largo
         setTimeout(function() {
             seleccionandoElemento = false;
-        }, 100);
+        }, 500);
+        
+        return false;
     });
 
     // Cerrar el listado si el usuario hace clic fuera
@@ -699,20 +725,31 @@
 
 
 
-    // Valores asignados codigo y nombre cups
+    // Valores asignados codigo y nombre cups (FUNCIÓN LEGACY - mantener para compatibilidad)
 
     function elemento_selecionado(object) {
+        // Activar flag para evitar búsquedas
+        seleccionandoElemento = true;
+        
         datos_cups = (object.id).split('&');
 
         paciente_categoria = datos_cups[5];
         categoria_cups = datos_cups[4];
 
+        // Ocultar listas PRIMERO
+        $('#lista_nombre').hide();
+        $('#lista_codigo').hide();
+        $('#mensaje').hide();
+        
+        // Asignar valores DESPUÉS
         $('#cup').val(datos_cups[0]);
         $('#codigo').val(datos_cups[1]);
         $('#cups_contratado').val(datos_cups[2]);
-        $('#lista_nombre').hide();
-        $('#mensaje').hide();
-        $('#lista_codigo').hide();
+        
+        // Desactivar flag después de un delay
+        setTimeout(function() {
+            seleccionandoElemento = false;
+        }, 500);
 
         //  $('#mensaje').show();
         /*if(paciente_categoria == 5){
@@ -832,8 +869,12 @@
                     $("#regimen").val(data[0].regNombre);
                     $("#empresa").val(data[0].empNombre);
 
+                    // Activar flag antes de limpiar campos
+                    seleccionandoElemento = true;
                     $("#codigo").val("");
                     $("#cup").val("");
+                    $("#cups_contratado").val("");
+                    setTimeout(function() { seleccionandoElemento = false; }, 300);
 
                     var html = "<a class='btn btn-link' onclick = 'historial(" + data[0].idPaciente + ")'>HISTORIAL DE CITAS</a>";
 

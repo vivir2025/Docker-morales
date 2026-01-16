@@ -289,6 +289,120 @@
     color: #6c757d;
     font-size: 14px;
 }
+
+/* Alerta de confirmación personalizada */
+.custom-confirm-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+
+.custom-confirm-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.7);
+    background: white;
+    border-radius: 15px;
+    padding: 35px;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+    min-width: 400px;
+    max-width: 90%;
+    animation: zoomIn 0.3s ease forwards;
+}
+
+.custom-confirm-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 25px;
+    border-radius: 50%;
+    background: #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scaleUp 0.5s ease;
+}
+
+.custom-confirm-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.custom-confirm-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.custom-confirm-message {
+    font-size: 16px;
+    color: #546e7a;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.custom-confirm-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.custom-confirm-btn {
+    border: none;
+    padding: 12px 30px;
+    border-radius: 25px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    min-width: 120px;
+}
+
+.custom-confirm-btn-cancel {
+    background: #ecf0f1;
+    color: #7f8c8d;
+}
+
+.custom-confirm-btn-cancel:hover {
+    background: #bdc3c7;
+    color: #2c3e50;
+    transform: scale(1.05);
+}
+
+.custom-confirm-btn-accept {
+    background: #3498db;
+    color: white;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
+}
+
+.custom-confirm-btn-accept:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(52, 152, 219, 0.5);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes zoomIn {
+    to { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes scaleUp {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
 </style>
 
 <div class="cronograma-container">
@@ -328,7 +442,59 @@
     <div id="mens_cita"></div>
 </div>
 
+<!-- Alerta de confirmación personalizada -->
+<div id="customConfirm" class="custom-confirm-overlay">
+    <div class="custom-confirm-box">
+        <div class="custom-confirm-icon">
+            <i class="fas fa-question-circle"></i>
+        </div>
+        <div class="custom-confirm-title">¿Iniciar Cita?</div>
+        <div class="custom-confirm-message" id="customConfirmMessage">¿Realmente desea iniciar esta cita?</div>
+        <div class="custom-confirm-buttons">
+            <button class="custom-confirm-btn custom-confirm-btn-cancel" onclick="cerrarConfirmPersonalizada(false)">
+                <i class="fas fa-times"></i> Cancelar
+            </button>
+            <button class="custom-confirm-btn custom-confirm-btn-accept" onclick="cerrarConfirmPersonalizada(true)">
+                <i class="fas fa-check"></i> Aceptar
+            </button>
+        </div>
+    </div>
+</div>
+
 <script type='text/javascript'>
+    // Variables para la confirmación personalizada
+    var confirmCallback = null;
+
+    // Función para mostrar confirmación personalizada
+    function mostrarConfirmPersonalizada(mensaje, callback) {
+        $('#customConfirmMessage').text(mensaje);
+        confirmCallback = callback;
+        $('#customConfirm').fadeIn(300);
+    }
+
+    // Función para cerrar confirmación
+    function cerrarConfirmPersonalizada(resultado) {
+        $('#customConfirm').fadeOut(300);
+        if (confirmCallback) {
+            confirmCallback(resultado);
+            confirmCallback = null;
+        }
+    }
+
+    // Cerrar con ESC
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && $('#customConfirm').is(':visible')) {
+            cerrarConfirmPersonalizada(false);
+        }
+    });
+
+    // Cerrar con click fuera
+    $('#customConfirm').on('click', function(e) {
+        if (e.target.id === 'customConfirm') {
+            cerrarConfirmPersonalizada(false);
+        }
+    });
+
     /*function eliminar(id_his_med) {
         if (confirm('¿Desea eliminar el medicamento?')) {
 
@@ -553,16 +719,13 @@
 
     function verValoracion(idCita, id_cat_cups, idProceso, pacDocumento) {
 
-        //console.log(idCita + "-" + id_cat_cups + "-" + idProceso + "-" +pacDocumento);
+        mostrarConfirmPersonalizada('¿Realmente desea iniciar esta cita?', function(resultado) {
+            if (!resultado) return;
 
-        if (idProceso == 1) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            if (idProceso == 1) {
                 if (id_cat_cups == 1) {
                     window.location.replace("<?php echo base_url() . 'index.php/CHistoria/primera_vez_hta/' ?>" + idCita)
                 } else {
-
                     $.ajax({
                         url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control',
                         method: 'post',
@@ -570,30 +733,19 @@
                             pacDocumento: pacDocumento
                         },
                         dataType: 'json',
-
                         success: function(data) {
-
                             var len = data.length;
-
                             if (len > 0) {
-
-                                //console.log(idCita);
                                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/control_hta/' ?>" + idCita)
                             }
                         }
                     });
-
                 }
-            }
 
-        } else if (idProceso == 2) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 2) {
                 if (id_cat_cups == 1) {
                     window.location.replace("<?php echo base_url() . 'index.php/CHistoria/trabajo_social/' ?>" + idCita)
                 } else {
-
                     $.ajax({
                         url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control1',
                         method: 'post',
@@ -601,39 +753,22 @@
                             pacDocumento: pacDocumento
                         },
                         dataType: 'json',
-
                         success: function(data) {
-
                             var len = data.length;
-
                             if (len > 0) {
-
-                                //console.log(idCita);
                                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/trabajo_social_control/' ?>" + idCita)
                             }
                         }
                     });
-
                 }
-            }
 
-        } else if (idProceso == 3) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 3) {
                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/reformulacion/' ?>" + idCita)
 
-            }
-
-
-        } else if (idProceso == 4) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 4) {
                 if (id_cat_cups == 1) {
                     window.location.replace("<?php echo base_url() . 'index.php/CHistoria/nutricionista/' ?>" + idCita)
                 } else {
-
                     $.ajax({
                         url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control1',
                         method: 'post',
@@ -641,57 +776,19 @@
                             pacDocumento: pacDocumento
                         },
                         dataType: 'json',
-
                         success: function(data) {
-
                             var len = data.length;
-
                             if (len > 0) {
-                                //console.log(idCita);
                                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/nutricionista_control/' ?>" + idCita)
                             }
                         }
                     });
                 }
-            }
 
-        } else if (idProceso == 13) {
-
-if (confirm('¿Realmente desea iniciar la cita?')) {
-
-    if (id_cat_cups == 1) {
-        window.location.replace("<?php echo base_url() . 'index.php/CHistoria/FISIOTERAPIA/' ?>" + idCita)
-    } else {
-
-        $.ajax({
-            url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control1',
-            method: 'post',
-            data: {
-                pacDocumento: pacDocumento
-            },
-            dataType: 'json',
-
-            success: function(data) {
-
-                var len = data.length;
-
-                if (len > 0) {
-                    //console.log(idCita);
-                    window.location.replace("<?php echo base_url() . 'index.php/CHistoria/Fisioterapia_control/' ?>" + idCita)
-                }
-            }
-        });
-    }
-}
-
-        } else if (idProceso == 5) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 13) {
                 if (id_cat_cups == 1) {
-                    window.location.replace("<?php echo base_url() . 'index.php/CHistoria/psicologia/' ?>" + idCita)
+                    window.location.replace("<?php echo base_url() . 'index.php/CHistoria/FISIOTERAPIA/' ?>" + idCita)
                 } else {
-
                     $.ajax({
                         url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control1',
                         method: 'post',
@@ -699,35 +796,41 @@ if (confirm('¿Realmente desea iniciar la cita?')) {
                             pacDocumento: pacDocumento
                         },
                         dataType: 'json',
-
                         success: function(data) {
-
                             var len = data.length;
-
                             if (len > 0) {
-                                //console.log(idCita);
+                                window.location.replace("<?php echo base_url() . 'index.php/CHistoria/Fisioterapia_control/' ?>" + idCita)
+                            }
+                        }
+                    });
+                }
+
+            } else if (idProceso == 5) {
+                if (id_cat_cups == 1) {
+                    window.location.replace("<?php echo base_url() . 'index.php/CHistoria/psicologia/' ?>" + idCita)
+                } else {
+                    $.ajax({
+                        url: '<?= base_url() ?>index.php/CHistoria/primeraVez_control1',
+                        method: 'post',
+                        data: {
+                            pacDocumento: pacDocumento
+                        },
+                        dataType: 'json',
+                        success: function(data) {
+                            var len = data.length;
+                            if (len > 0) {
                                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/psicologia_control/' ?>" + idCita)
                             }
                         }
                     });
                 }
-            }
-        } else if (idProceso == 6) {
 
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 6) {
                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/historia_clinica/' ?>" + idCita)
 
-            }
-
-        } else if (idProceso == 7) {
-
-            if (confirm('¿Realmente desea iniciar la cita?')) {
-
+            } else if (idProceso == 7) {
                 window.location.replace("<?php echo base_url() . 'index.php/CHistoria/historia_clinica/' ?>" + idCita)
-
             }
-
-        }
+        });
     }
 </script>

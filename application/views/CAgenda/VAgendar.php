@@ -667,8 +667,10 @@
                         $("#etiqueta").val("");
                         $("#brigada").val("");
                         
-                        html = "<div class='alert alert-success alert-dismissible fade show' role='alert'>Agenda creada exitosamente<button type='button' class='close' data-dismiss='alert' aria-label='Close'><span aria-hidden='true'>&times;</span></button></div>";
-                        $("#mens").html(html);
+                        // Mostrar alerta bonita personalizada
+                        setTimeout(function() {
+                            mostrarAlertaPersonalizada('¡Éxito!', 'Agenda creada correctamente', 'success');
+                        }, 300);
                     }
                 },
                 error: function() {

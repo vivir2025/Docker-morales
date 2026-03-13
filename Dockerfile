@@ -46,8 +46,7 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 COPY docker/apache/morales.conf /etc/apache2/conf-available/morales.conf
 RUN a2enconf morales
 
-# Copiar script de entrypoint personalizado
-COPY docker/scripts/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Establecer el directorio de trabajo
